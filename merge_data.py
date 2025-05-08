@@ -90,7 +90,7 @@ def push_to_huggingface(df, repo_id, token=None):
 def main():
     # Get parameters
     json_folder_path = "data/json"
-    hf_repo_id = "codin-research/benh_hoc_tap1-corpus-raw"
+    hf_repo_id = "codin-research/benh-hoc-corpus-raw"
     hf_token = os.getenv("HF_TOKEN")
     
     # Read JSON files

@@ -10,7 +10,7 @@ def parse_markdown_nested(file_path):
     header_pattern = re.compile(r'^(#{1,8})\s+\*?(.*?)\*?\s*$', re.MULTILINE)
     headers = list(header_pattern.finditer(content))
 
-    def build_tree(headers, content):
+    def build_tree(headers, content, lv=3):
         stack = []
         root = []
 
@@ -22,7 +22,7 @@ def parse_markdown_nested(file_path):
             body = content[start:end].strip()
 
             node = {}
-            if level == 2:
+            if level == lv:
                 node["header"] = title.strip()
             else:
                 node["title"] = title.strip()
