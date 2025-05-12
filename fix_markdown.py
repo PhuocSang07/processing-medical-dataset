@@ -61,6 +61,8 @@ def fix_markdown_headers(file_path):
         level = 2  # default ##
         if re.match(r'^[IVXLCDM]+\.', plain):
             level = 3
+        elif re.match(r'^BÀI\s+\d+', inner.upper()):
+            level=1
         elif re.match(r'^\d+\.\d+\.\d+\.\d+', plain):
             level = 7  # beyond ###... treat specially or adjust as needed
         elif re.match(r'^\d+\.\d+\.\d+', plain):
@@ -69,6 +71,7 @@ def fix_markdown_headers(file_path):
             level = 5
         elif re.match(r'^\d+\.', plain):
             level = 4
+
 
         fixed_lines.append(f"{'#' * level} {content}\n")
 

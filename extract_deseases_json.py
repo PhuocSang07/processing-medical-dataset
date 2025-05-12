@@ -1,6 +1,6 @@
 import json
 
-def extract_features(json_path, lv=3):
+def extract_features(json_path, lv_parent=2,lv=3):
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
     result = []
@@ -22,7 +22,7 @@ def extract_features(json_path, lv=3):
 
     def recurse_nodes(nodes):
         for node in nodes:
-            if node["level"] == 3:
+            if node["level"] == lv_parent:
                 entry = {"Bệnh": node.get("header", "")}
                 for child in node.get("children", []):
                     child_sections = []

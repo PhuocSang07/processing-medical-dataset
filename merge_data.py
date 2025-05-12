@@ -4,6 +4,9 @@ import pandas as pd
 from datasets import Dataset
 from huggingface_hub import login
 from dotenv import load_dotenv
+from datasets import load_dataset, Dataset, concatenate_datasets
+
+
 load_dotenv()
 def read_json_files(folder_path):
     """Read JSON files from a folder and return a list of data."""
@@ -77,50 +80,83 @@ def create_dataframe(json_files_data):
             data['type_desease'].append(type_disease)
     return pd.DataFrame(data)
 
+def load_markdown_files(folder_path):
+    data = []
 
-def push_to_huggingface(df, repo_id, token=None):
+    # Duyệt qua tất cả các file trong thư mục
+    for filename in os.listdir(folder_path):
+        if filename.endswith(".md"):
+            file_path = os.path.join(folder_path, filename)
+            with open(file_path, "r", encoding="utf-8") as f:
+                content = f.read()
+                data.append({"file_name": filename, "markdown": content})
+    
+    # Tạo DataFrame
+    df = pd.DataFrame(data)
+    return df
+
+
+def push_to_huggingface(dataset, repo_id, token=None):
     """Push the DataFrame to Hugging Face."""
     if token:
         login(token)
     
-    dataset = Dataset.from_pandas(df)
+    # dataset = Dataset.from_pandas(df)
     dataset.push_to_hub(repo_id)
     print(f"Successfully pushed dataset to {repo_id}")
 
 def main():
     # Get parameters
-    json_folder_path = "data/json"
-    hf_repo_id = "codin-research/benh-hoc-corpus-raw"
+    # json_folder_path = "data/json"
+    hf_repo_id = "codin-research/corpus-book-medical"
     hf_token = os.getenv("HF_TOKEN")
     
     # Read JSON files
-    print("Reading JSON files...")
-    json_files_data = read_json_files(json_folder_path)
-    print(f"Found {len(json_files_data)} JSON files.")
+    # print("Reading JSON files...")
+    # json_files_data = read_json_files(json_folder_path)
+    # print(f"Found {len(json_files_data)} JSON files.")
     
-    if not json_files_data:
-        print("No JSON data found. Exiting.")
-        return
+    # if not json_files_data:
+    #     print("No JSON data found. Exiting.")
+    #     return
     
     # Create DataFrame
-    print("Processing JSON data...")
-    df = create_dataframe(json_files_data)
-    print(f"Created DataFrame with {len(df)} records.")
-    
-    df.to_json(
-        "push_data/data_merge_v1.json",
-        orient="records",
-        force_ascii=False,
-        indent=2
-    )    # Display sample
+    # print("Processing JSON data...")
+    # df = create_dataframe(json_files_data)
+    # print(f"Created DataFrame with {len(df)} records.")
+
+    df = load_markdown_files("BENHHOC/data/data_markdown")
+    print(f"Found {len(df)} markdown files.")
+
+    # df.to_json(
+    #     "push_data/data_merge_v1.json",
+    #     orient="records",
+    #     force_ascii=False,
+    #     indent=2
+    # )    # Display sample
+
+    ##########################
+    # Load dataset cũ từ hub
+    # Load dataset cũ từ HuggingFace
+    old_dataset = load_dataset(hf_repo_id, split="train")
+
+    # Convert markdown df to Dataset
+    new_dataset = Dataset.from_pandas(df)
+
+    # Gộp với dataset cũ
+    combined_dataset = concatenate_datasets([old_dataset, new_dataset])
+
+    # Ghi ra file để kiểm tra
+    combined_dataset.to_json("data/combined_data.jsonl", orient="records", lines=True, force_ascii=False)
+
     confirm = input("\nDo you want to push this data to Hugging Face? (y/n): ")
 
     print("\nSample of the DataFrame:")
     pd.set_option('display.max_colwidth', 50)
     print(df.head())
 
-    df = pd.read_json("push_data/data_merge_v1.json")
-    
+    # df = pd.read_json("push_data/data_merge_v1.json")
+
     # Confirm before pushing
     if confirm.lower() == 'y':
         try:

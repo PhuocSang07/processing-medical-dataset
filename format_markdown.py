@@ -1,7 +1,7 @@
 import re
 import json
 
-def parse_markdown_nested(file_path):
+def parse_markdown_nested(file_path, lv=3):
     with open(file_path, 'r', encoding='utf-8') as f:
         content = f.read()
 
@@ -10,7 +10,7 @@ def parse_markdown_nested(file_path):
     header_pattern = re.compile(r'^(#{1,8})\s+\*?(.*?)\*?\s*$', re.MULTILINE)
     headers = list(header_pattern.finditer(content))
 
-    def build_tree(headers, content, lv=3):
+    def build_tree(headers, content):
         stack = []
         root = []
 
